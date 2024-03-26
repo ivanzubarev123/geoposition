@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get User Location</title>
+<style>
+  .arrow {
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 100px solid blue;
+    position: relative;
+    margin: 50px;
+  }
+  .north {
+    transform: rotate(0deg);
+  }
+  .east {
+    transform: rotate(90deg);
+  }
+  .south {
+    transform: rotate(180deg);
+  }
+  .west {
+    transform: rotate(270deg);
+  }
+</style>
+<script>
+  function getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+      document.getElementById("direction").innerText = "Geolocation is not supported by this browser.";
+    }
+  }
+
+  function showPosition(position) {
+    var userLatitude = position.coords.latitude;
+    var userLongitude = position.coords.longitude;
+    var targetLatitude = 51.663116; // Заданная широта
+    var targetLongitude = 39.171990; // Заданная долгота
+
+    var radianLatitude = Math.PI * userLatitude/180;
+    var radianTargetLatitude = Math.PI * targetLatitude/180;
+    var theta = userLongitude - targetLongitude;
+    var radianTheta = Math.PI * theta/180;
+
+    var direction = Math.atan2(Math.sin(radianTheta), Math.cos(radianLatitude)*Math.tan(radianTargetLatitude) - Math.sin(radianLatitude)*Math.cos(radianTheta));
+
+    // Convert to degrees
+    direction = direction * 180 / Math.PI;
+
+    // Normalize to 0-360
+    direction = (direction + 360) % 360;
+
+    // Determine the cardinal direction
+    var cardinalDirection;
+    if (direction >= 337.5 || direction < 22.5) {
+      cardinalDirection = "north";
+    } else if (direction >= 22.5 && direction < 67.5) {
+      cardinalDirection = "east";
+    } else if (direction >= 67.5 && direction < 112.5) {
+      cardinalDirection = "south";
+    } else if (direction >= 112.5 && direction < 157.5) {
+      cardinalDirection = "south";
+    } else if (direction >= 157.5 && direction < 202.5) {
+      cardinalDirection = "west";
+    } else if (direction >= 202.5 && direction < 247.5) {
+      cardinalDirection = "north";
+    } else if (direction >= 247.5 && direction < 292.5) {
+      cardinalDirection = "west";
+    } else if (direction >= 292.5 && direction < 337.5) {
+      cardinalDirection = "north";
+    }
+
+    // Add the arrow to the page
+    var arrow = document.createElement("div");
+    arrow.className = "arrow " + cardinalDirection;
+    document.body.appendChild(arrow);
+  }
+
+  function showError(error) {
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        document.getElementById("direction").innerText = "User denied the request for Geolocation.";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        document.getElementById("direction").innerText = "Location information is unavailable.";
+        break;
+      case error.TIMEOUT:
+        document.getElementById("direction").innerText = "The request to get user location timed out.";
+        break;
+      case error.UNKNOWN_ERROR:
+        document.getElementById("direction").innerText = "An unknown error occurred.";
+        break;
+    }
+  }
+
+  window.onload = getUserLocation;
+</script>
+</head>
+<body>
+  <p id="direction">Loading...</p>
+</body>
+</html>
